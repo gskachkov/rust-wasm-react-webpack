@@ -6,7 +6,7 @@ import Button from './js/button';
 
 import logo from './assets/logo.svg';
 
-import FractalModule from './js/wasm-binding/fractal.js'
+import x86Loader from './js/wasm-binding/x86-loader.js'
 import { drawFractalActionFactory, downloadImageActionFactory } from './js/action/fractal.js'
 import wasmImportObject from './js/wasm/wasm-import-object.js'
 
@@ -19,37 +19,8 @@ const getImage = () => document.querySelector('#canvas-out');
 
 const cb = function (wasm) {
   const wasmInstance = wasm.instance;
-  const { add, dec } = wasmInstance.exports;
 
-  const doCalc = (prevValue, value) => add(prevValue, value);
-
-  const fractalModule = new FractalModule(wasmInstance.exports);
-
-  const getImageParams = () => {
-    const img = getImage();
-    const { width, height } = img;
-  
-    return { img, width, height};
-  };
-
-  const doGenerateFractal = startStep => {
-    const imgParams = getImageParams();
-    const ctx = imgParams.img.getContext("2d");
-    
-    const action = drawFractalActionFactory(fractalModule, ctx, imgParams.width, imgParams.height);
-
-    action(startStep, maxStep);
-    return "Generated"
-  };
-
-  const doSaveFractalImage = step => {
-    const imgParams = getImageParams();
-
-    const action = downloadImageActionFactory(fractalModule, imgParams.width, imgParams.height, step);
-
-    action(step);
-    return "Saved"
-  };
+  const x86LoaderModule = new x86Loader(wasmInstance.exports);
 
   ReactDOM.render(
     <div className="App">
@@ -57,14 +28,10 @@ const cb = function (wasm) {
       <h1 className="App-Title">{title}</h1>
       <ul>
         <li>
-          <Button title="Add 1" action ={ doCalc } value= { 1 } showResult = { true } />
+          <Button title="Load Linux" action ={ x86LoaderModule.load.bind(x86LoaderModule) } value= { 1 } showResult = { true } />
         </li>
         <li>
-          <Button title="Generate Fractal" action ={ doGenerateFractal } value= { 1 }/>
-          <canvas id="canvas-out" width="480" height="480"></canvas>
-        </li>
-        <li>
-          <Button title="Generate and Save Fractal" action ={ doSaveFractalImage } value= { maxStep }/>
+          <Button title="Run Linux" action ={ x86LoaderModule.run.bind(x86LoaderModule) } value= { 1 } showResult = { true } />
         </li>
       </ul>
     </div>,
