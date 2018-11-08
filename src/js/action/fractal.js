@@ -6,15 +6,21 @@ const updateCanvas = (ctx, data) => {
 
 const drawFractalActionFactory = (module, ctx, xSize, ySize) => (step, maxStep) => {
     const action = value => {
+        console.log('value:', value);
+        console.time('calc');
+        console.time('full-without-canvas');
+        console.time('full');
         if (gpr !== null) {
             module.free_vec(gpr);
         }
-
         gpr = module.generate(xSize, ySize, value);
+        console.timeEnd('calc');
         const len = module.vec_len(gpr);
         const bitmap = new Uint8ClampedArray (module.memory.buffer, gpr, len);
         var data = new ImageData(bitmap, xSize, xSize);
+        console.timeEnd('full-without-canvas');
         updateCanvas(ctx, data);
+        console.timeEnd('full');
     };
 
     const performActions = value => {

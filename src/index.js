@@ -60,8 +60,8 @@ const cb = function (wasm) {
           <Button title="Add 1" action ={ doCalc } value= { 1 } showResult = { true } />
         </li>
         <li>
-          <Button title="Generate Fractal" action ={ doGenerateFractal } value= { 1 }/>
-          <canvas id="canvas-out" width="480" height="480"></canvas>
+          <Button title="Generate Fractal" action ={ doGenerateFractal } value= { 16 }/>
+          <canvas id="canvas-out" width="120" height="120"></canvas>
         </li>
         <li>
           <Button title="Generate and Save Fractal" action ={ doSaveFractalImage } value= { maxStep }/>
