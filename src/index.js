@@ -7,7 +7,7 @@ import Button from './js/button';
 import logo from './assets/logo.svg';
 
 import FractalModule from './js/wasm-binding/fractal.js'
-import { drawFractalActionFactory, downloadImageActionFactory } from './js/action/fractal.js'
+import { drawFractalActionFactory, downloadImageActionFactory, drawSimpleFractalActionFactory } from './js/action/fractal.js'
 import wasmImportObject from './js/wasm/wasm-import-object.js'
 
 import wasmLoader from './lib.rs';
@@ -35,10 +35,13 @@ const cb = function (wasm) {
   const doGenerateFractal = startStep => {
     const imgParams = getImageParams();
     const ctx = imgParams.img.getContext("2d");
-    
-    const action = drawFractalActionFactory(fractalModule, ctx, imgParams.width, imgParams.height);
 
+    wasmImportObject.helper.setCanvas(ctx);
+    
+    const action = drawSimpleFractalActionFactory(fractalModule, ctx, imgParams.width, imgParams.height);
+    console.time('drawFractal');
     action(startStep, maxStep);
+    console.timeEnd('drawFractal');
     return "Generated"
   };
 

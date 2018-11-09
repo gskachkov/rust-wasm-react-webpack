@@ -6,6 +6,7 @@ class FractalModule {
         this.generate = wasm.fractal_generate;
         this.free_vec = wasm.fractal_free_vec;
         this.get_image = wasm.fractal_get_image;
+        this.drawfractal = wasm.drawfractal;
         this.init();
     }
 }

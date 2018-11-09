@@ -27,6 +27,12 @@ const drawFractalActionFactory = (module, ctx, xSize, ySize) => (step, maxStep) 
     performActions(step);
 };
 
+const drawSimpleFractalActionFactory = (module, ctx, xSize, ySize) => () => {
+    const action = () => module.drawfractal(xSize, ySize);
+
+    action();
+};
+
 const downloadImageActionFactory = (module, xSize, ySize) => value => {
     if (gpr !== null) {
         module.free_vec(gpr);
@@ -53,4 +59,4 @@ const downloadImageActionFactory = (module, xSize, ySize) => value => {
     saveByteArray([bitmap], 'example.png');
 }
 
-export { drawFractalActionFactory, downloadImageActionFactory };
+export { drawFractalActionFactory, downloadImageActionFactory, drawSimpleFractalActionFactory };
