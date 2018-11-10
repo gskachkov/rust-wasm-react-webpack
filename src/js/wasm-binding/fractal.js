@@ -1,13 +1,15 @@
 class FractalModule {
     constructor (wasm) {
         this.memory = wasm.memory;
-        this.init = wasm.fractal_init;
-        this.vec_len = wasm.fractal_vec_len;
-        this.generate = wasm.fractal_generate;
-        this.free_vec = wasm.fractal_free_vec;
-        this.get_image = wasm.fractal_get_image;
+
         this.drawfractal = wasm.drawfractal;
-        this.init();
+
+        this.simple_init = wasm.simple_fractal_init;
+        this.simple_vec_len = wasm.simple_fractal_vec_len;
+        this.simple_generate = wasm.simple_fractal_generate;
+        this.simple_free_vec = wasm.simple_fractal_free_vec;
+    
+        this.simple_init();
     }
 }
 

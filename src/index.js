@@ -4,24 +4,21 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Button from './js/button';
 
-import logo from './assets/logo.svg';
-
 import FractalModule from './js/wasm-binding/fractal.js'
-import { drawFractalActionFactory, downloadImageActionFactory, drawSimpleFractalActionFactory } from './js/action/fractal.js'
+import { drawFractalActionFactory, downloadImageActionFactory, drawSimpleFractalActionFactory, drawSimpleFractalActionFactory2 } from './js/action/fractal.js'
 import wasmImportObject from './js/wasm/wasm-import-object.js'
 
 import wasmLoader from './lib.rs';
 
 const maxStep = 18;
-const title = 'JavaScript FwDays: Rust to Wasm in React Web App Demo!';
+const title = 'LvivCSS: WebAssembly in CSS  Demo!';
+const subtitle = "Apply CSS Paint API on DIV"; 
 
-const getImage = () => document.querySelector('#canvas-out');
+const getDiv = () => document.querySelector('#fractal-wasm');
+const getImage = () => document.querySelector('#wasm-id');
 
 const cb = function (wasm) {
   const wasmInstance = wasm.instance;
-  const { add, dec } = wasmInstance.exports;
-
-  const doCalc = (prevValue, value) => add(prevValue, value);
 
   const fractalModule = new FractalModule(wasmInstance.exports);
 
@@ -32,42 +29,72 @@ const cb = function (wasm) {
     return { img, width, height};
   };
 
-  const doGenerateFractal = startStep => {
+  const doGenerateSimpleFractal = startStep => {
     const imgParams = getImageParams();
     const ctx = imgParams.img.getContext("2d");
 
     wasmImportObject.helper.setCanvas(ctx);
     
-    const action = drawSimpleFractalActionFactory(fractalModule, ctx, imgParams.width, imgParams.height);
-    console.time('drawFractal');
+    const action = drawSimpleFractalActionFactory2(fractalModule, ctx, imgParams.width, imgParams.height);
+    console.time('drawFractal #wasm');
     action(startStep, maxStep);
-    console.timeEnd('drawFractal');
+    console.timeEnd('drawFractal #wasm');
     return "Generated"
   };
 
-  const doSaveFractalImage = step => {
-    const imgParams = getImageParams();
+  const doApplyStyleWithPaintAPIWASMINternal = () => {
+    const div = getDiv();
+    div.className = "fractal-content-wasm-internal";
+    return "Generated";
+  };
+  
+  const doApplyStyleWithPaintAPIWASMINExternal = () => {
+    const div = getDiv();
+    div.className = "fractal-content-wasm-external";
+    return "Generated";
+  };
 
-    const action = downloadImageActionFactory(fractalModule, imgParams.width, imgParams.height, step);
+  const doApplyStyleWithPaintAPIJS = () => {
+    const div = getDiv();
+    div.className = "fractal-content-js";
+    return "Generated";
+  };
 
-    action(step);
-    return "Saved"
+  const doApplyStyleWithPaintAPIConicGradient = () => {
+    const div = getDiv();
+    div.className = "conic-gradient";
+    return "Generated";
+  };
+
+  const doApplyStyleNoPaintApi = () => {
+    const div = getDiv();
+    div.className = "no-paint-api";
+    return "Generated";
   };
 
   ReactDOM.render(
     <div className="App">
-      <img className="App-Logo" src={logo} alt="React Logo" />
       <h1 className="App-Title">{title}</h1>
+      <h2 className="App-Title">{subtitle}</h2>
       <ul>
         <li>
-          <Button title="Add 1" action ={ doCalc } value= { 1 } showResult = { true } />
+          <Button title="Conic Gradient" action ={ doApplyStyleWithPaintAPIConicGradient } value= { 1 }/>
         </li>
         <li>
-          <Button title="Generate Fractal" action ={ doGenerateFractal } value= { 1 }/>
-          <canvas id="canvas-out" width="480" height="480"></canvas>
+          <Button title="WASM with Draw" action ={ doApplyStyleWithPaintAPIWASMINternal } value= { 1 }/>
         </li>
         <li>
-          <Button title="Generate and Save Fractal" action ={ doSaveFractalImage } value= { maxStep }/>
+          <Button title="WASM without Draw" action ={ doApplyStyleWithPaintAPIWASMINExternal } value= { 1 }/>
+        </li>
+        <li>
+          <Button title="pure JS" action ={ doApplyStyleWithPaintAPIJS } value= { 1 }/>
+        </li>
+        <li>
+          <Button title="Native WASM" action ={ doGenerateSimpleFractal } value= { 1 }/>
+          <canvas id="wasm-id" width="200" height="200"></canvas>
+        </li>
+        <li>
+          <Button title="Clear" action ={ doApplyStyleNoPaintApi } value= { 1 }/>
         </li>
       </ul>
     </div>,

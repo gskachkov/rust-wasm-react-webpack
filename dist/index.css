@@ -48,3 +48,34 @@ li {
   float: left;
   margin: 10px;
 }
+
+.fractal-content-wasm-internal {
+  background: paint(fractal-paint-wasm-internal);
+  min-height: 250px;
+}
+
+.fractal-content-wasm-external {
+  background: paint(fractal-paint-wasm-external);
+  min-height: 250px;
+}
+
+.fractal-content-js {
+  background: paint(fractal-paint-js);
+  min-height: 250px;
+}
+
+.conic-gradient { 
+  background: paint(conic-gradient);
+  min-height: 250px;
+}
+
+.no-paint-api { 
+  min-height: 250px;
+}
+
+.div-wrapper {
+  margin-left: 35%;
+  margin-right: 35%;
+  width: 30%;
+  background: blue;
+}

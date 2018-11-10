@@ -1,4 +1,5 @@
 use std::ops::{Add, Mul};
+use std::collections::HashMap;
 
 #[derive(Copy, Clone)]
 struct Complex {
@@ -80,18 +81,8 @@ extern {
     fn canvas_fill_rect(x:f32,y:f32,width:f32,height:f32);
 }
 
-
 #[no_mangle]
 pub fn drawfractal(width: usize, height: usize) {
-    // console::time();
-    // dom::create_element("body","style","game_styles");
-    // dom::set_inner_html("#game_styles",include_str!("fractal.css"));
-    // dom::create_element("body","canvas","screen");
-    // dom::set_attribute("#screen","width","600");
-    // dom::set_attribute("#screen","height","400");
-    // let ctx = canvas::get_context("#screen");
-
-    // lets interpolate between these complex numbers and see how fast they go out to infinity when squared
     let upper_left = Complex{re:-1.2,im:0.35};
     let lower_right = Complex{re:-1.0,im:0.2};
     let bounds = (width, height);
@@ -109,5 +100,102 @@ pub fn drawfractal(width: usize, height: usize) {
             fill_rect(column as f32, row as f32, 1.0, 1.0);
         }
     }
-    // console::time_end();
+}
+
+static mut SHARED_VECS : Option<HashMap<u16, Vec<u16>>> = None;
+
+#[no_mangle]
+pub fn simple_fractal_init() {
+    unsafe { SHARED_VECS = Some(HashMap::new()) }
+}
+
+#[no_mangle]
+pub fn simple_fractal_vec_len(payload: *const u16) -> u16 {
+    unsafe {
+        SHARED_VECS
+            .as_ref()
+            .unwrap()
+            .get(&(payload as u16))
+            .unwrap()
+            .len() as u16
+    }
+}
+
+pub fn simple_vec2js<V: Into<Vec<u16>>>(v: V) -> *const u16 {
+    let v = v.into();
+    let payload = v.as_ptr();
+    unsafe {
+        SHARED_VECS.as_mut().unwrap().insert(payload as u16, v);
+    }
+    payload
+}
+
+#[no_mangle]
+pub extern "C" fn simple_fractal_free_vec(payload: *const u16) {
+    unsafe {
+        SHARED_VECS.as_mut().unwrap().remove(&(payload as u16));
+    }
+}
+
+#[inline] 
+pub fn convert_to_u32(f:f32) -> u16 {
+    let b = f as u16;
+    b
+}
+
+#[inline] 
+pub fn convert_to_u32_inc(f:f32) -> u16 {
+    let b = f * 100.00;
+    let b = b as u16;
+    b
+}
+
+#[inline]
+pub fn fill_rect_command(vec: &mut Vec<u16>, x:f32, y:f32, width:f32, height:f32){
+    //command header
+    vec.push(0); // command
+    vec.push(4); // length
+
+    // payload
+    vec.push(convert_to_u32(x));
+    vec.push(convert_to_u32(y));
+    vec.push(convert_to_u32(width));
+    vec.push(convert_to_u32(height));
+}
+
+#[inline]
+pub fn set_fill_style_color_command(vec: &mut Vec<u16>, r:u16, g:u16, b:u16, a:f32){
+    //command header
+    vec.push(1); // command
+    vec.push(4); // length
+
+    // payload
+    vec.push(r);
+    vec.push(g);
+    vec.push(b);
+    vec.push(convert_to_u32_inc(a));
+}
+
+#[no_mangle]
+pub fn simple_fractal_generate(width: usize, height: usize) -> *const u16 {
+    let upper_left = Complex{re:-1.2,im:0.35};
+    let lower_right = Complex{re:-1.0,im:0.2};
+    let bounds = (width, height);
+    let ref mut vec: Vec<u16> = Vec::new();
+
+    for column in 0..bounds.0 {
+        for row in 0..bounds.1 {
+            let point = pixel_to_point(bounds,(column,row),upper_left,lower_right);
+            let escape_limit = 255;
+            let v = match escape_time(point, escape_limit) {
+                //if it didn't escape to infinity within our limit make black
+                None => 0,
+                //if it went to infinity fast, lets make it whiter
+                Some(count) => (255 - count) as u16
+            };
+            set_fill_style_color_command(vec, v, v, v, 1.0);
+            fill_rect_command(vec, column as f32, row as f32, 1.0, 1.0);
+        }
+    }
+    simple_vec2js(vec.as_mut())
 }
